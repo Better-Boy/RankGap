@@ -155,26 +155,26 @@ function ResultsDisplay({ data, onReset }: ResultsDisplayProps) {
         
         <div className="divide-y divide-gray-100">
           <AnalysisSection
-            title="Visibility Analysis"
-            icon={<TrendingUp className="w-5 h-5" />}
-            iconBg="bg-blue-100"
-            iconColor="text-blue-600"
+            // title="Visibility Analysis"
+            // icon={<TrendingUp className="w-5 h-5" />}
+            // iconBg="bg-blue-100"
+            // iconColor="text-blue-600"
             content={data.analysis.visibilityAnalysis}
           />
           
           <AnalysisSection
-            title="Competitor Analysis"
-            icon={<BarChart3 className="w-5 h-5" />}
-            iconBg="bg-red-100"
-            iconColor="text-red-600"
+            // title="Competitor Analysis"
+            // icon={<BarChart3 className="w-5 h-5" />}
+            // iconBg="bg-red-100"
+            // iconColor="text-red-600"
             content={data.analysis.competitorAnalysis}
           />
           
           <AnalysisSection
-            title="Recommendations"
-            icon={<Search className="w-5 h-5" />}
-            iconBg="bg-green-100"
-            iconColor="text-green-600"
+            // title="Recommendations"
+            // icon={<Search className="w-5 h-5" />}
+            // iconBg="bg-green-100"
+            // iconColor="text-green-600"
             content={data.analysis.recommendations}
           />
         </div>
@@ -184,22 +184,22 @@ function ResultsDisplay({ data, onReset }: ResultsDisplayProps) {
 }
 
 interface AnalysisSectionProps {
-  title: string;
-  icon: React.ReactNode;
-  iconBg: string;
-  iconColor: string;
+  // title: string;
+  // icon: React.ReactNode;
+  // iconBg: string;
+  // iconColor: string;
   content: string;
 }
 
-function AnalysisSection({ title, icon, iconBg, iconColor, content }: AnalysisSectionProps) {
+function AnalysisSection({ content }: AnalysisSectionProps) {
   return (
     <div className="p-8">
-      <div className="flex items-center space-x-3 mb-6">
+      {/* <div className="flex items-center space-x-3 mb-6">
         <div className={`w-8 h-8 ${iconBg} rounded-lg flex items-center justify-center`}>
           <div className={iconColor}>{icon}</div>
         </div>
         <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-      </div>
+      </div> */}
       
       <div className="prose prose-gray max-w-none 
         prose-headings:text-gray-900 prose-headings:font-bold prose-headings:mb-3 prose-headings:mt-6 first:prose-headings:mt-0
