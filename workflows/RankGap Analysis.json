@@ -69,7 +69,7 @@
       "typeVersion": 3.4,
       "position": [
         -3216,
-        336
+        328
       ],
       "id": "378fdb8d-dd5d-4108-9a0d-e5b3708ba9c8",
       "name": "Edit Fields1"
@@ -205,7 +205,7 @@
         "text": "=Target Product with search results:\n\n{{ $json.toJsonString() }}",
         "needsFallback": true,
         "options": {
-          "systemMessage": "=You are an expert Amazon SEO analyst. \n\nYou will be given: \n1. The target product details.\n2. For multiple search queries, the top 20 product results for each query.\n\nInstructions:\n- Only use the input product JSON; do not invent any data.\n- Determine if the target product appears in the top 20 results for each query by checking its ASIN.\n- Summarize overall visibility:\n    - Appears in all queries\n    - Appears in some queries\n    - Missing in all queries\n- If present, note the typical rank range.\n- Identify patterns with recurring competitors across queries.\n- Highlight the target product’s early strengths and weaknesses in visibility and comparison to top competitors.\n- Do not provide per-query breakdown; instead summarize collectively across all queries.\n\nOutput Format (Markdown):\n# Visibility Analysis\n\n### Presence across queries\n...\n\n### Typical rank range (if present)\n...\n\n### Competitor patterns\n...\n\n### Observed strengths of target product\n...\n\n### Observed weaknesses of target product\n...\n\n# Initial Recommendations\n### High-level actions to improve visibility and competitiveness\n..."
+          "systemMessage": "You are an expert Amazon SEO analyst. \n\nYou will be given: \n1. The target product details.\n2. For multiple search queries, the top 20 product results for each query.\n\nInstructions:\n- Only use the input product JSON; do not invent any data.\n- Determine if the target product appears in the top 20 results for each query by checking its ASIN.\n- Summarize overall visibility:\n    - Appears in all queries\n    - Appears in some queries\n    - Missing in all queries\n- If present, note the typical rank range.\n- Identify patterns with recurring competitors across queries.\n- Highlight the target product’s early strengths and weaknesses in visibility and comparison to top competitors.\n- Do not provide per-query breakdown; instead summarize collectively across all queries.\n\nImportant:\n- Do NOT generate new product titles, bullet points, or ad copy.\n- Do NOT propose marketing plans, ad targeting plans, or keyword campaigns unless the necessary data is explicitly provided in the input JSON.\n- All recommendations must be strictly based on the given fields of the target product and competitor products.\n- If no actionable data is present for a recommendation, clearly state \"insufficient data\" instead of inventing content.\n\nOutput Format (Markdown):\n# Visibility Analysis\n\n### Presence across queries\n...\n\n### Typical rank range (if present)\n...\n\n### Competitor patterns\n...\n\n### Observed strengths of target product\n...\n\n### Observed weaknesses of target product\n...\n\n# Initial Recommendations\n### High-level actions to improve visibility and competitiveness\n..."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -261,7 +261,7 @@
         "text": "=Target Product with search results:\n\n{{ $json.toJsonString() }}",
         "needsFallback": true,
         "options": {
-          "systemMessage": "=You are an expert Amazon SEO analyst.\n\nYou will be given:\n1. The target product details.\n2. The top 20 products for each search query.\n\nInstructions:\n- Only use the input product JSON; do not invent any data.\n- Check presence of the target product by ASIN.\n- For competitors consistently appearing across queries, compare their attributes to the target product:\n    - Title / keywords\n    - Categories\n    - Final price\n    - Rating\n    - Reviews count\n- Identify gaps or differences that explain why competitors rank higher.\n- Focus on both queries where the product appears and queries where it is missing.\n- Output clear, actionable insights without per-query breakdown.\n\nOutput Format (Markdown):\n# Competitor & Attribute Gap Analysis\n\n### Keyword gaps / title optimization opportunities\n\n1. ...\n2. ...\n\n### Category mismatches\n\n1. ...\n2. ...\n\n### Pricing or review gaps\n\n1. ...\n2. ...\n\n#### Other factors influencing rank\n..."
+          "systemMessage": "=You are an expert Amazon SEO analyst.\n\nYou will be given:\n1. The target product details.\n2. The top 20 products for each search query.\n\nInstructions:\n- Only use the input product JSON; do not invent any data.\n- Check presence of the target product by ASIN.\n- For competitors consistently appearing across queries, compare their attributes to the target product:\n    - Title / keywords\n    - Categories\n    - Final price\n    - Rating\n    - Reviews count\n- Identify gaps or differences that explain why competitors rank higher.\n- Focus on both queries where the product appears and queries where it is missing.\n- Output clear, actionable insights without per-query breakdown.\n\nImportant:\n- Do NOT generate new product titles, bullet points, or ad copy.\n- Do NOT propose marketing plans, ad targeting plans, or keyword campaigns unless the necessary data is explicitly provided in the input JSON.\n- All recommendations must be strictly based on the given fields of the target product and competitor products.\n- If no actionable data is present for a recommendation, clearly state \"insufficient data\" instead of inventing content.\n\nOutput Format (Markdown):\n# Competitor & Attribute Gap Analysis\n\n### Keyword gaps / title optimization opportunities\n\n1. ...\n2. ...\n\n### Category mismatches\n\n1. ...\n2. ...\n\n### Pricing or review gaps\n\n1. ...\n2. ...\n\n#### Other factors influencing rank\n..."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -323,14 +323,14 @@
         "text": "=Target Product with search results:\n\n{{ $json.toJsonString() }}\n",
         "needsFallback": true,
         "options": {
-          "systemMessage": "You are an expert Amazon SEO analyst.\n\nYou will be given:\n1. The target product details.\n2. The top 20 products for each search query.\n\nInstructions:\n- Only use the input product JSON; do not invent any data.\n- Use the findings from previous analysis (presence, competitor gaps).\n- Provide a prioritized action plan to improve the target product’s visibility and rank across all queries.\n- Include recommendations for:\n    - Title / keyword optimization\n    - Category alignment\n    - Price adjustments\n    - Reviews and rating improvement\n    - Sponsored placements\n    - Brand positioning\n- Highlight quick wins vs long-term improvements.\n- Check presence using ASIN in top 20 to tailor recommendations.\n\nOutput Format (Markdown):\n# Final Recommendations & Action Plan\n## Quick Wins\n- ...\n\n## Medium-term Improvements\n- ...\n\n## Long-term Strategy\n- ...\n"
+          "systemMessage": "=You are an expert Amazon SEO analyst.\n\nYou will be given:\n1. The target product details.\n2. The top 20 products for each search query.\n\nInstructions:\n- Only use the input product JSON; do not invent any data.\n- Use the findings from previous analysis (presence, competitor gaps).\n- Provide a prioritized action plan to improve the target product’s visibility and rank across all queries.\n- Include recommendations for:\n    - Title / keyword optimization\n    - Category alignment\n    - Price adjustments\n    - Reviews and rating improvement\n    - Sponsored placements\n    - Brand positioning\n- Highlight quick wins vs long-term improvements.\n- Check presence using ASIN in top 20 to tailor recommendations.\n\nImportant:\n- Do NOT generate new product titles, bullet points, or ad copy.\n- Do NOT propose marketing plans, ad targeting plans, or keyword campaigns unless the necessary data is explicitly provided in the input JSON.\n- All recommendations must be strictly based on the given fields of the target product and competitor products.\n- If no actionable data is present for a recommendation, clearly state \"insufficient data\" instead of inventing content.\n\nOutput Format (Markdown):\n# Final Recommendations & Action Plan\n## Quick Wins\n- ...\n\n## Medium-term Improvements\n- ...\n\n## Long-term Strategy\n- ...\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        -3568,
-        1128
+        -3536,
+        1088
       ],
       "id": "99e0c347-8376-4955-a454-182a666d8348",
       "name": "Final Recommendations & Action Plan Agent"
@@ -540,7 +540,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "38890dad-8879-4037-b7bf-7a9696ef9788",
+  "versionId": "6711ec18-dec0-4384-9d73-2e4fb5216fc9",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "5cfbab65a6db6cc02f7f3b1fc5bec28cbc302df240ee88e73c7ef09d12c34ce0"
