@@ -1,0 +1,550 @@
+{
+  "name": "RankGap Analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2992,
+        712
+      ],
+      "id": "dc4a41b7-4271-47ca-af72-3a9601bad83b",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -4016,
+        728
+      ],
+      "id": "77252835-a868-4eb6-94ed-3e19d871b1a2",
+      "name": "Search Analysis",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d2089d01-c607-438e-a521-f71802a6fe01",
+              "name": "ca_analysis",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3216,
+        728
+      ],
+      "id": "6a49907d-11dc-4e88-a9c4-683ed45fbce9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1544515-f911-4b13-8b68-b05a9be7a82d",
+              "name": "vp_analysis",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3216,
+        336
+      ],
+      "id": "378fdb8d-dd5d-4108-9a0d-e5b3708ba9c8",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b53b53ab-dbc7-4565-b72e-e06afc2cf22f",
+              "name": "final_reco",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3216,
+        1128
+      ],
+      "id": "d8a59803-197d-46df-8cc6-abd2b9ae6679",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "function simplifyProduct(item) {\n  return {\n    target_product: (({ title, final_price, rating, url, image }) => ({\n      title, final_price, rating, url, image\n    }))(item.target_product),\n    search_queries: item.search_queries.map(query => ({\n      ...query,\n      result: query.result.map(({ title, final_price, rating, url, image, rank }) => ({\n        title, final_price, rating, url, image, rank\n      }))\n    }))\n  };\n}\n\n// Get all 3 items from Merge\nconst mergedArray = $input.all().map(item => item.json);\n\n// Convert into single object\nconst mergedObject = mergedArray.reduce((acc, obj) => {\n  return { ...acc, ...obj };\n}, {});\n\n// Get workflow trigger input (from Search Analysis)\nconst triggerInput = $(\"Search Analysis\").first().json;\nconst minimalInput = simplifyProduct(triggerInput);\n// Merge trigger input + merged analysis\nconst finalOutput = {\n  ...minimalInput,\n  ...mergedObject\n};\n\nreturn finalOutput;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2768,
+        728
+      ],
+      "id": "151660e9-1e30-4146-980e-17cf13681020",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "function simplifyProduct(item) {\n  return {\n    target_product: (({ title, brand, asin, description, categories, url }) => ({\n      title, brand, asin, description, categories, url\n    }))(item.target_product),\n    search_queries: item.search_queries.map(query => ({\n      ...query,\n      result: query.result.map(({ title, brand, asin, description, categories, rank, url }) => ({\n        title, brand, asin, description, categories, rank, url\n      }))\n    }))\n  };\n}\n\n// Example usage:\nconst input = $input.first().json;\nconst simplifiedData = simplifyProduct(input);\nreturn simplifiedData;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3792,
+        328
+      ],
+      "id": "abd9ba28-66c6-4d07-ab65-e4a7d01ac2ce",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "jsCode": "function simplifyProduct(item) {\n  return {\n    target_product: (({ title, brand, asin, final_price, rating, reviews_count, categories, url }) => ({\n      title, brand, asin, final_price, rating, reviews_count, categories, url\n    }))(item.target_product),\n    search_queries: item.search_queries.map(query => ({\n      ...query,\n      result: query.result.map(({ title, brand, asin, final_price, rating, reviews_count, categories, url, rank }) => ({\n        title, brand, asin, final_price, rating, reviews_count, categories, url, rank\n      }))\n    }))\n  };\n}\n\n// Example usage:\nconst input = $input.first().json;\nconst simplifiedData = simplifyProduct(input);\nreturn simplifiedData;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3792,
+        728
+      ],
+      "id": "262c8cee-3bfe-464f-a035-482f0aaa3578",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "jsCode": "function simplifyProduct(item) {\n  return {\n    target_product: (({ title, brand, asin, final_price, rating, reviews_count, categories, url,  bs_rank, badge, sponsered }) => ({\n      title, brand, asin, final_price, rating, reviews_count, categories, url,  bs_rank, badge, sponsered\n    }))(item.target_product),\n    search_queries: item.search_queries.map(query => ({\n      ...query,\n      result: query.result.map(({ title, brand, asin, final_price, rating, reviews_count, categories, url,  bs_rank, badge, sponsered }) => ({\n        title, brand, asin, final_price, rating, reviews_count, categories, url,  bs_rank, badge, sponsered\n      }))\n    }))\n  };\n}\n\n// Example usage:\nconst input = $input.first().json;\nconst simplifiedData = simplifyProduct(input);\nreturn simplifiedData;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3792,
+        1128
+      ],
+      "id": "fb1d63c3-676c-4d74-8127-f51fae51d238",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -3560,
+        448
+      ],
+      "id": "2776fbff-22bd-4033-a90b-fff4d17f32e3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Sdlv0Wm6URq0HiPH",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -3560,
+        848
+      ],
+      "id": "45bbd472-088d-4f45-bc7e-b7cae27db762",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "Sdlv0Wm6URq0HiPH",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Target Product with search results:\n\n{{ $json.toJsonString() }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=You are an expert Amazon SEO analyst. \n\nYou will be given: \n1. The target product details.\n2. For multiple search queries, the top 20 product results for each query.\n\nInstructions:\n- Only use the input product JSON; do not invent any data.\n- Determine if the target product appears in the top 20 results for each query by checking its ASIN.\n- Summarize overall visibility:\n    - Appears in all queries\n    - Appears in some queries\n    - Missing in all queries\n- If present, note the typical rank range.\n- Identify patterns with recurring competitors across queries.\n- Highlight the target product’s early strengths and weaknesses in visibility and comparison to top competitors.\n- Do not provide per-query breakdown; instead summarize collectively across all queries.\n\nOutput Format (Markdown):\n# Visibility Analysis\n\n### Presence across queries\n...\n\n### Typical rank range (if present)\n...\n\n### Competitor patterns\n...\n\n### Observed strengths of target product\n...\n\n### Observed weaknesses of target product\n...\n\n# Initial Recommendations\n### High-level actions to improve visibility and competitiveness\n..."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3568,
+        224
+      ],
+      "id": "68d73eff-bc4f-4cf5-acff-a2f2d42b4d59",
+      "name": "Visibility & Presence Analysis Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -3432,
+        448
+      ],
+      "id": "2bac945e-13f0-45dd-aab3-f020f6cf6260",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "844lmTTsM9rvcY8z",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -3432,
+        848
+      ],
+      "id": "36240651-f176-4dbe-9e64-94137e32d1af",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "844lmTTsM9rvcY8z",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Target Product with search results:\n\n{{ $json.toJsonString() }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=You are an expert Amazon SEO analyst.\n\nYou will be given:\n1. The target product details.\n2. The top 20 products for each search query.\n\nInstructions:\n- Only use the input product JSON; do not invent any data.\n- Check presence of the target product by ASIN.\n- For competitors consistently appearing across queries, compare their attributes to the target product:\n    - Title / keywords\n    - Categories\n    - Final price\n    - Rating\n    - Reviews count\n- Identify gaps or differences that explain why competitors rank higher.\n- Focus on both queries where the product appears and queries where it is missing.\n- Output clear, actionable insights without per-query breakdown.\n\nOutput Format (Markdown):\n# Competitor & Attribute Gap Analysis\n\n### Keyword gaps / title optimization opportunities\n\n1. ...\n2. ...\n\n### Category mismatches\n\n1. ...\n2. ...\n\n### Pricing or review gaps\n\n1. ...\n2. ...\n\n#### Other factors influencing rank\n..."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3568,
+        624
+      ],
+      "id": "c84098e1-a323-4528-a411-a628561d6a3d",
+      "name": "Competitor & Attribute Gap Analysis"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -3560,
+        1352
+      ],
+      "id": "09272670-a174-4b4c-974e-75f418f8b685",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "Sdlv0Wm6URq0HiPH",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -3432,
+        1352
+      ],
+      "id": "112d4b91-e781-499a-8e0f-24ed6e367c66",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "844lmTTsM9rvcY8z",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Target Product with search results:\n\n{{ $json.toJsonString() }}\n",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are an expert Amazon SEO analyst.\n\nYou will be given:\n1. The target product details.\n2. The top 20 products for each search query.\n\nInstructions:\n- Only use the input product JSON; do not invent any data.\n- Use the findings from previous analysis (presence, competitor gaps).\n- Provide a prioritized action plan to improve the target product’s visibility and rank across all queries.\n- Include recommendations for:\n    - Title / keyword optimization\n    - Category alignment\n    - Price adjustments\n    - Reviews and rating improvement\n    - Sponsored placements\n    - Brand positioning\n- Highlight quick wins vs long-term improvements.\n- Check presence using ASIN in top 20 to tailor recommendations.\n\nOutput Format (Markdown):\n# Final Recommendations & Action Plan\n## Quick Wins\n- ...\n\n## Medium-term Improvements\n- ...\n\n## Long-term Strategy\n- ...\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3568,
+        1128
+      ],
+      "id": "99e0c347-8376-4955-a454-182a666d8348",
+      "name": "Final Recommendations & Action Plan Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Analysis": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Visibility & Presence Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Competitor & Attribute Gap Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Final Recommendations & Action Plan Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Visibility & Presence Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Competitor & Attribute Gap Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Visibility & Presence Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Competitor & Attribute Gap Analysis",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Visibility & Presence Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Competitor & Attribute Gap Analysis": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Recommendations & Action Plan Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Recommendations & Action Plan Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Final Recommendations & Action Plan Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "38890dad-8879-4037-b7bf-7a9696ef9788",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5cfbab65a6db6cc02f7f3b1fc5bec28cbc302df240ee88e73c7ef09d12c34ce0"
+  },
+  "id": "iyTHIyy42q6Ts7j5",
+  "tags": []
+}

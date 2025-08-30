@@ -1,0 +1,642 @@
+{
+  "name": "RankGap",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        912,
+        592
+      ],
+      "id": "d1951843-29ff-4285-b151-eecce39bb3aa",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Sdlv0Wm6URq0HiPH",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"queries\": [\"tshirt\", \"blue tshirt\", \"jeans\", \"blue jeans\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1168,
+        592
+      ],
+      "id": "766c6ac1-f6bc-425a-b1ba-9f8c33af2937",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.queries",
+        "options": {
+          "destinationFieldName": "search_query"
+        }
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        368
+      ],
+      "id": "ca9ff796-c52e-45c4-a0d5-b9ba178b47f4",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2944,
+        440
+      ],
+      "id": "dc1f51fe-ecb3-4d3a-8027-d457c7db1edb",
+      "name": "Wait2",
+      "webhookId": "09732afc-9ed7-4333-a646-3eeb65360d37"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1600,
+        368
+      ],
+      "id": "db5d8c61-ee67-4417-9eca-49d76d76671c",
+      "name": "Loop Over Search Queries",
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "zone": {
+          "__rl": true,
+          "value": "web_unlocker",
+          "mode": "list",
+          "cachedResultName": "web_unlocker"
+        },
+        "country": {
+          "__rl": true,
+          "value": "us",
+          "mode": "list",
+          "cachedResultName": "us"
+        },
+        "url": "={{ \"https://www.amazon.com/s?k=\" + encodeURIComponent($json.search_query).replace(/%20/g, \"+\") }}",
+        "format": "json",
+        "requestOptions": {}
+      },
+      "type": "@brightdata/n8n-nodes-brightdata.brightData",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        368
+      ],
+      "id": "42fc22ba-ff90-4ac7-86de-e0a1e3bc3e52",
+      "name": "Scrape product search results",
+      "retryOnFail": false,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "brightdataApi": {
+          "id": "fnhHqrFjLyxQQFO8",
+          "name": "BrightData account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "body",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "asins",
+              "cssSelector": "div[role=\"listitem\"]",
+              "returnValue": "attribute",
+              "attribute": "data-asin",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        2048,
+        368
+      ],
+      "id": "008ea34d-8de2-424d-b095-d07f6a23b65e",
+      "name": "Extract search results asins"
+    },
+    {
+      "parameters": {
+        "jsCode": "const asins = $input.first().json.asins;\n\n// Take top 20 ASINs\nconst top20Asins = asins.filter(Boolean).slice(0, 10);\n\nconst dpUrls = top20Asins.map(asin => ({\n  url: `https://www.amazon.com/dp/${asin}`\n}));\n\nreturn {\n  search_query: $('Loop Over Search Queries').first().json.search_query,\n  urls: dpUrls\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        368
+      ],
+      "id": "c03411c5-8288-4002-8e4c-21d31afc2f03",
+      "name": "Transform Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "function transformTargetProduct(item){\n   return {\n      asin: item.asin || null,\n      title: item.title || null,\n      brand: item.brand || null,\n      image: item.image_url || null,\n      url: item.url || null,\n      categories: item.categories || [],\n      description: item.description || null,\n      initial_price: item.initial_price || null,\n      final_price: item.final_price || null,\n      reviews_count: item.reviews_count || 0,\n      rating: item.rating || null,\n      bs_rank: item.bs_rank || null,\n      badge: item.badge || null,\n      sponsered: item.sponsered || false\n    }\n}\n\nconst targetProduct = $(\"Download Target Product\").first().json;\nconst results = $input.all().map(item => item.json);\nconst transformedTargetProduct = transformTargetProduct(targetProduct);\n\nreturn {\"target_product\": transformedTargetProduct, \"search_queries\": results}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        176
+      ],
+      "id": "0ae90d70-60b8-42a1-824d-82f0aaaa42da",
+      "name": "Transform data for AI agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Number of Queries needed - {{ $('Webhook').item.json.body.queryCount }}\nProduct Data - \n{\n\"title\" : {{ $json.title }},\n\"brand\": {{ $json.brand }},\n\"description\": {{ $json.description }},\n\"features\": {{ $json.features }},\n\"product_details\": {{ $json.product_details.toJsonString() }}\n}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are an expert Amazon SEO and e-commerce search strategist.\nGiven structured product information in JSON format, your task is to generate exactly the specified number of diverse Amazon search queries that a real customer might use to search for this product.\n\nRules for Query Generation:\n\nInclude natural language style, and feature-specific queries.\n\nDistribute queries across these styles proportionally - natural language, feature-specific.\n\nKeep in mind that all the queries must reflect the product’s title, description, brand, or attributes. \n\nQueries must be different from each other and represent realistic Amazon shopper intent. \n\nGenerate only the specified number of queries."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        368
+      ],
+      "id": "709ecf67-a7c7-456a-bfb5-37315c8c1536",
+      "name": "Search Query Generator"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Fb4EhRKOStpNZb8o",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2496,
+        368
+      ],
+      "id": "605b7bc4-9a09-4137-a74b-f4ad3e36303c",
+      "name": "Download Search Results Products"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n\"urls\": [\n{\"url\": \"{{ $json.body.url }}\"}\n]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        368
+      ],
+      "id": "377d381c-b346-42e6-a146-2911b19ff3b2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const transformProducts = (data) => {\n  return data.map((item, idx) => {\n    item = item.json;\n    return {\n      asin: item.asin || null,\n      rank: idx + 1,\n      title: item.title || null,\n      brand: item.brand || null,\n      image: item.image_url || null,\n      url: item.url || null,\n      categories: item.categories || [],\n      description: item.description || null,\n      initial_price: item.initial_price || null,\n      final_price: item.final_price || null,\n      reviews_count: item.reviews_count || 0,\n      rating: item.rating || null,\n      bs_rank: item.bs_rank || null,\n      badge: item.badge || null,\n      sponsered: item.sponsered || false\n    };\n  });\n};\n\nreturn {search_query: $('Loop Over Search Queries').first().json.search_query, result: transformProducts($input.all())};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2720,
+        368
+      ],
+      "id": "cc320971-caf9-45ad-bc4f-bfd4fab29cb6",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Fb4EhRKOStpNZb8o",
+          "mode": "list",
+          "cachedResultName": "Download Amazon Products"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        368
+      ],
+      "id": "d6c610d5-0261-4b24-990c-019c8db16a55",
+      "name": "Download Target Product"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "iyTHIyy42q6Ts7j5",
+          "mode": "list",
+          "cachedResultName": "RankGap Analysis"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2048,
+        176
+      ],
+      "id": "46d861e1-5952-49c4-b276-97df66f80381",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "be9ebabf-5346-42fe-9a00-f4dff2bf8561",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "5f4f91a7-7dd6-4e66-b4d6-111932111804",
+              "name": "brand",
+              "value": "={{ $json.brand }}",
+              "type": "string"
+            },
+            {
+              "id": "f609a43f-dd92-4da9-8ff3-2671f98b1f78",
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "fe0ee483-242e-4261-953f-061bdd5f4c61",
+              "name": "features",
+              "value": "={{ $json.features }}",
+              "type": "array"
+            },
+            {
+              "id": "a5d1d277-4ca6-4cba-ae31-1dd4e9af2ee8",
+              "name": "product_details",
+              "value": "={{ $json.product_details }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        368
+      ],
+      "id": "930d3270-6871-48ca-8c93-6902276e4da6",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        592
+      ],
+      "id": "fc4851cc-9bf7-494f-acca-53d26ebe31ad",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "844lmTTsM9rvcY8z",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/api/analyze",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        368
+      ],
+      "id": "7f31da2f-e496-46c7-adbc-00cfeae48696",
+      "name": "Webhook",
+      "webhookId": "035c7317-12a5-45bc-b4f3-f3c740de0174"
+    },
+    {
+      "parameters": {
+        "tableId": "product_data",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $('Webhook').first().json.body.execution_id }}"
+            },
+            {
+              "fieldId": "data",
+              "fieldValue": "={{ $json }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        176
+      ],
+      "id": "6dc2c320-c59e-4e06-af05-bef3434c0bcb",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "do4ZTosgyXeJfJSr",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Search Query Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Search Query Generator",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Search Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Search Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Search Queries": {
+      "main": [
+        [
+          {
+            "node": "Transform data for AI agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Scrape product search results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape product search results": {
+      "main": [
+        [
+          {
+            "node": "Extract search results asins",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract search results asins": {
+      "main": [
+        [
+          {
+            "node": "Transform Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Data": {
+      "main": [
+        [
+          {
+            "node": "Download Search Results Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform data for AI agent": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Query Generator": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Search Results Products": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Download Target Product",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Target Product": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Search Query Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Search Query Generator",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "23c5586f-3329-450b-938c-9b1db201b870",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5cfbab65a6db6cc02f7f3b1fc5bec28cbc302df240ee88e73c7ef09d12c34ce0"
+  },
+  "id": "tP9vq99JR992TIUx",
+  "tags": []
+}

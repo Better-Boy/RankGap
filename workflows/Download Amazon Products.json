@@ -1,0 +1,268 @@
+{
+  "name": "Download Amazon Products",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "webScrapper",
+        "operation": "downloadSnapshot",
+        "snapshot_id": "={{ $('If').item.json.snapshot_id }}",
+        "requestOptions": {}
+      },
+      "type": "@brightdata/n8n-nodes-brightdata.brightData",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -48
+      ],
+      "id": "cfa7491b-fea8-4f41-aaa8-af45b6b812fa",
+      "name": "Download the snapshot content",
+      "credentials": {
+        "brightdataApi": {
+          "id": "fnhHqrFjLyxQQFO8",
+          "name": "BrightData account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        -48
+      ],
+      "id": "dd4520dd-8d55-4b79-a82d-a2cac5cf28e6",
+      "name": "Wait4",
+      "webhookId": "28d70501-682c-48f2-9e54-3a67614033dd"
+    },
+    {
+      "parameters": {
+        "resource": "webScrapper",
+        "operation": "monitorProgressSnapshot",
+        "snapshot_id": "={{ $json.snapshot_id }}",
+        "requestOptions": {}
+      },
+      "type": "@brightdata/n8n-nodes-brightdata.brightData",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        0
+      ],
+      "id": "e9d6f5fd-c458-4393-9286-8479f9d991ca",
+      "name": "Snapshot Progress monitor",
+      "credentials": {
+        "brightdataApi": {
+          "id": "fnhHqrFjLyxQQFO8",
+          "name": "BrightData account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": true
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -768,
+        72
+      ],
+      "id": "ec3c2235-2eff-41c3-a0d5-4631915c6be6",
+      "name": "Loop till snapshot is ready"
+    },
+    {
+      "parameters": {
+        "resource": "webScrapper",
+        "operation": "triggerCollectionByUrl",
+        "dataset_id": {
+          "__rl": true,
+          "value": "gd_lwhideng15g8jg63s7",
+          "mode": "list",
+          "cachedResultName": "Amazon products global dataset"
+        },
+        "urls": "={{ $json.urls.toJsonString() }}",
+        "requestOptions": {}
+      },
+      "type": "@brightdata/n8n-nodes-brightdata.brightData",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        72
+      ],
+      "id": "3822eaa5-1a00-43ad-ab28-98aa95e88ae2",
+      "name": "Search product batch download",
+      "credentials": {
+        "brightdataApi": {
+          "id": "fnhHqrFjLyxQQFO8",
+          "name": "BrightData account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        168
+      ],
+      "id": "19f5f4e7-bf5b-41b7-9d56-7b741c47a22e",
+      "name": "Wait3",
+      "webhookId": "261890ca-7d0c-41a7-b1fe-7d8e10f60b25"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f4a61aa5-0591-4f43-b583-48f9783a1d34",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ready",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "0c759263-b5aa-4a85-a54c-79a9b8e99856",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1216,
+        72
+      ],
+      "id": "0d8094f1-8b17-42c9-bd66-25cb71cee90a",
+      "name": "Download Amazon Products"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download the snapshot content": {
+      "main": [
+        []
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Download the snapshot content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snapshot Progress monitor": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop till snapshot is ready": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Snapshot Progress monitor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search product batch download": {
+      "main": [
+        [
+          {
+            "node": "Loop till snapshot is ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Loop till snapshot is ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Amazon Products": {
+      "main": [
+        [
+          {
+            "node": "Search product batch download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a3c92d2f-075e-43a2-9879-73495ac18147",
+  "meta": {
+    "instanceId": "5cfbab65a6db6cc02f7f3b1fc5bec28cbc302df240ee88e73c7ef09d12c34ce0"
+  },
+  "id": "Fb4EhRKOStpNZb8o",
+  "tags": []
+}
