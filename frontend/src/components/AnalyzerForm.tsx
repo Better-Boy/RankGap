@@ -94,12 +94,9 @@ function AnalyzerForm({ onSubmit, isLoading, error, loadingMessage }: AnalyzerFo
               className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 transition-all"
               disabled={isLoading}
             >
-              {/* <option value={5}>5 queries (Quick analysis)</option>
-              <option value={10}>10 queries (Standard analysis)</option>
-              <option value={15}>15 queries (Comprehensive analysis)</option> */}
               <option value={1}>1 queries (Quick analysis)</option>
-              <option value={2}>2 queries (Standard analysis)</option>
-              <option value={3}>3 queries (Comprehensive analysis)</option>
+              <option value={3}>3 queries (Standard analysis)</option>
+              <option value={5}>5 queries (Comprehensive analysis)</option>
 
             </select>
             <p className="mt-2 text-sm text-gray-500">
