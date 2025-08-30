@@ -103,7 +103,7 @@ function AnalyzerForm({ onSubmit, isLoading, error, loadingMessage }: AnalyzerFo
 
             </select>
             <p className="mt-2 text-sm text-gray-500">
-              More queries provide deeper insights but take longer to process
+              Max number of queries is restricted to 5 as more queries provide deeper insights but take longer to process
             </p>
           </div>
 
