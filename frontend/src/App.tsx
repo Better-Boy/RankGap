@@ -41,7 +41,7 @@ function App() {
   const [loadingMessage, setLoadingMessage] = useState('Initializing analysis...');
 
   const pollForResults = async (executionId: string): Promise<any> => {
-    const maxAttempts = 15;
+    const maxAttempts = 20;
     let attempts = 0;
     
     while (attempts < maxAttempts) {

@@ -112,7 +112,7 @@ function AnalyzerForm({ onSubmit, isLoading, error, loadingMessage }: AnalyzerFo
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>{loadingMessage || 'Analyzing Rankings...It can take upto 5-7 mins. Get yourself a coffee in the meantime'}</span>
+                <span>{loadingMessage || 'Analyzing Rankings...It can take upto 5-10 mins. Get yourself a coffee in the meantime'}</span>
               </>
             ) : (
               <>
